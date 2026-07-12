@@ -46,7 +46,10 @@ def drawImg(x, y, w, h, textureID):
 
 tilewidth, tileheight = 384, 192
 getscrxy = lambda x, y: (tilewidth/2 * (x-y), tileheight/2 * (x+y))
+from maptest import floormap, wallmap
 
+"""
+this is what's in maptest.py
 floormap = [
 	[-1, -1, -1, -1, -1, -1],
 	[-1, 0, 0, 0, 0, 0, 0],
@@ -67,6 +70,8 @@ wallmap = [
 	[-1, 2, 3, 3, 3, 3, 3, 4, -1],
 	[-1, -1, -1, -1, -1, -1, -1, -1],
 ]
+"""
+
 if __name__ == "__main__":
 	pygame.init()
 	screen = pygame.display.set_mode((600, 800), RESIZABLE|DOUBLEBUF|OPENGL)
@@ -117,13 +122,13 @@ if __name__ == "__main__":
 				if floormap[i][j] not in textID:
 					textID[floormap[i][j]] = loadTexture("assets/tiles.png", floormap[i][j])
 				x, y = getscrxy(j, i)
-				drawImg(x-px,y+py, 384, 384, textID[floormap[i][j]])
+				drawImg(x-px+(width/2),y+py, 384, 384, textID[floormap[i][j]])
 		for i in range(len(wallmap)):
 			for j in range(len(wallmap[i])):
 				if wallmap[i][j] not in textID:
 					textID[wallmap[i][j]] = loadTexture("assets/tiles.png", wallmap[i][j])
 				x, y = getscrxy(j, i)
-				drawImg(x-px,y+py-44, 384, 384, textID[wallmap[i][j]])
+				drawImg(x-px+(width/2),y+py-48, 384, 384, textID[wallmap[i][j]])
 		
 		pygame.display.flip()
 		pygame.time.wait(10)
