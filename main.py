@@ -1,5 +1,4 @@
-import pygame
-from pygame.locals import *
+import glfw
 
 from OpenGL.GL import *
 from OpenGL.GLU import *
@@ -48,33 +47,15 @@ tilewidth, tileheight = 384, 192
 getscrxy = lambda x, y: (tilewidth/2 * (x-y), tileheight/2 * (x+y))
 from maptest import floormap, wallmap
 
-"""
-this is what's in maptest.py
-floormap = [
-	[-1, -1, -1, -1, -1, -1],
-	[-1, 0, 0, 0, 0, 0, 0],
-	[-1, 0, 0, 0, 0, 0, 0],
-	[-1, 0, 0, 0, 0, 0, 0],
-	[-1, 0, 0, 0, 0, 0, 0],
-	[-1, 0, 0, 0, 0, 0, 0],
-	[-1, 0, 0, 0, 0, 0, 0],
-]
-wallmap = [
-	[-1, -1, -1, -1, -1, -1, -1, -1, -1],
-	[-1, -1, 3, 3, 3, 3, 3, 3, -1],
-	[-1, 2, -1, -1, -1, -1, -1, 2, -1],
-	[-1, 2, -1, -1, -1, -1, -1, 2, -1],
-	[-1, 2, -1, -1, -1, -1, -1, 2, -1],
-	[-1, 2, -1, -1, -1, -1, -1, 2, -1],
-	[-1, 2, -1, -1, -1, -1, -1, 2, -1],
-	[-1, 2, 3, 3, 3, 3, 3, 4, -1],
-	[-1, -1, -1, -1, -1, -1, -1, -1],
-]
-"""
-
 if __name__ == "__main__":
-	pygame.init()
-	screen = pygame.display.set_mode((600, 800), RESIZABLE|DOUBLEBUF|OPENGL)
+	glfw.init()
+	glfw.window_hint(glfw.RESIZABLE, glfw.TRUE)
+	
+	screen = glfw.create_window(800, 600, "Blade of Liberation", None, None)
+	if not screen:
+		glfw.terminate()
+		raise Exception("GLFW window cannot be created")
+	glfw.make_context_current(screen)
 	glClearColor(0.2, 0.2, 0.2, 1.0)	
 	glEnable(GL_BLEND)
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
@@ -82,13 +63,12 @@ if __name__ == "__main__":
 	glDisable(GL_SCISSOR_TEST)
 	glDisable(GL_CULL_FACE)
 	px, py = 0, 0
-	mvmnt = [pygame.K_e, pygame.K_d, pygame.K_s, pygame.K_f]
+	mvmnt = [glfw.KEY_E, glfw.KEY_D, glfw.KEY_S, glfw.KEY_F]
 
 	textID = {}
 	
-	running = True
-	width, height = screen.get_size()
-	while running:
+	while not glfw.window_should_close(screen):
+		width, height = glfw.get_window_size(screen)
 		glViewport(0, 0, width, height)
 
 		glMatrixMode(GL_PROJECTION)
@@ -98,21 +78,14 @@ if __name__ == "__main__":
 		glMatrixMode(GL_MODELVIEW)
 		glLoadIdentity()
 		
-		for event in pygame.event.get():
-			if event.type == pygame.QUIT:
-				running = False
-			elif event.type == pygame.VIDEORESIZE:
-				width, height = event.w, event.h
-		
 		speed = 8
-		keys = pygame.key.get_pressed()
-		if keys[mvmnt[0]]:
+		if glfw.get_key(screen, mvmnt[0]) == glfw.PRESS:
 			py += speed
-		if keys[mvmnt[1]]:
+		if glfw.get_key(screen, mvmnt[1]) == glfw.PRESS:
 			py -= speed
-		if keys[mvmnt[2]]:
+		if glfw.get_key(screen, mvmnt[2]) == glfw.PRESS:
 			px -= speed
-		if keys[mvmnt[3]]:
+		if glfw.get_key(screen, mvmnt[3]) == glfw.PRESS:
 			px += speed
 
 		glClear(GL_COLOR_BUFFER_BIT)
@@ -130,7 +103,7 @@ if __name__ == "__main__":
 				x, y = getscrxy(j, i)
 				drawImg(x-px+(width/2),y+py-48, 384, 384, textID[wallmap[i][j]])
 		
-		pygame.display.flip()
-		pygame.time.wait(10)
+		glfw.swap_buffers(screen)
+		glfw.poll_events()
 
-	pygame.quit()
+	glfw.terminate()
