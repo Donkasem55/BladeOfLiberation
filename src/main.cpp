@@ -23,6 +23,7 @@ int px = 0;
 int py = 0;
 
 int speed = 8;
+int tmpx, tmpy;
 
 void getscrxy(int x, int y, int* xout, int* yout) {
 	*xout = tilewidth/2 * (x-y);
@@ -90,7 +91,23 @@ unsigned int loadTexture(const char* texture, int tileid) {
 	return textID;
 }
 
+void drawImg(int x, int y, int w, int h, unsigned int textureID) {
+	glEnable(GL_TEXTURE_2D);
+	glBindTexture(GL_TEXTURE_2D);
 
+	glBegin(GL_QUADS);
+	glTexCoord2f(0, 0);
+	glVertex2f(x, y);
+	glTexCoord2f(1, 0);
+	glVertex2f(x + w, y);
+	glTexCoord2f(1, 1);
+	glVertex2f(x + w, y + h);
+	glTexCoord2f(0, 1);
+	glVertex2f(x, y + h);
+	glEnd();
+
+	glDisable(GL_TEXTURE_2D);
+}
 
 int main(int argc, char* argv[]) {
 	glfwInit();
@@ -138,7 +155,15 @@ int main(int argc, char* argv[]) {
 
 		glClear(GL_COLOR_BUFFER_BIT);
 
-		
+		for (int i=0; i<floormap.size(); i++) {
+			for (int j=0; j<floormap[i].size(); j++) {
+				if (textID.find(floormap[i][j]) != textID.end()) {
+					textID[floormap[i][j]] = loadTexture("assets/tiles.png", floormap[i][j])
+				}
+				getscrxy(j, i, &tmpx, &tmpy);
+				drawImg(x-px+(width/2),y+py-48, 384, 384, textID[floormap[i][j]])
+			}
+		}
 	}
 }
 
