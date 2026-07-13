@@ -21,7 +21,7 @@ int height;
 int px = 0;
 int py = 0;
 
-int speed = 8;
+int speed = 1;
 int tmpx, tmpy;
 
 void getscrxy(int x, int y, int* xout, int* yout) {
