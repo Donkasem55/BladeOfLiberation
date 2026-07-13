@@ -121,6 +121,8 @@ void drawImg(int x, int y, int w, int h, unsigned int textureID) {
 	glDisable(GL_TEXTURE_2D);
 }
 
+// we live in a cruel world
+
 int main(int argc, char* argv[]) {
 	glfwInit();
 	glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
