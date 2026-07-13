@@ -62,9 +62,9 @@ unsigned int loadTexture(const char* texture, int tileid) {
 	unsigned char* text = nullptr;
 	std::vector<unsigned char> txt(32 * 32 * 4);
 	if (tileid == -1) {
-		textTMP = stbi_load("empty.png", &imgwidth, &imgheight, &channels, 4);
-		text = textTMP;
-		//tileid = 12;
+		//textTMP = stbi_load("empty.png", &imgwidth, &imgheight, &channels, 4);
+		//text = textTMP;
+		tileid = 12; // tile -1 is the legacy id for empty tile
 	}
 	{
 		textTMP = stbi_load(texture, &imgwidth, &imgheight, &channels, 4);
@@ -142,7 +142,6 @@ int main(int argc, char* argv[]) {
 	std::vector<std::vector<int>> wallmap = readmap("wall.txt");
 	
 	std::map<int, unsigned int> textID;
-	unsigned int smth = loadTexture("assets/tiles.png", 1);
 
 	while (!glfwWindowShouldClose(screen)) {
 		glfwGetWindowSize(screen, &width, &height);
@@ -188,7 +187,6 @@ int main(int argc, char* argv[]) {
 				drawImg(tmpx-px+(width/2), tmpy+py-48, 384, 384, textID[wallmap[i][j]]);
 			}
 		}
-		drawImg(0, 0, 32, 32, smth);
 		
 		glfwSwapBuffers(screen);
 		glfwPollEvents();
