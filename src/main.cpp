@@ -6,10 +6,11 @@
 
 #include <map>
 #include <string>
-#include <sstream>
 #include <vector>
+#include <thread>
+#include <chrono>
+#include <sstream>
 #include <fstream>
-
 #include <iostream>
 
 const int tilewidth = 384;
@@ -21,8 +22,11 @@ int height;
 int px = 0;
 int py = 0;
 
-int speed = 1;
+int speed = 8;
 int tmpx, tmpy;
+
+const float tfps = 120.0f;
+const float tfd = 1.0f / tfps;
 
 void getscrxy(int x, int y, int* xout, int* yout) {
 	*xout = tilewidth/2 * (x-y);
@@ -55,13 +59,11 @@ std::vector<std::vector<int>> readmap(const char* filename) {
 	return output;
 }
 
-unsigned int loadTexture(const char* texture, int tileid) {
-	std::cout << tileid << std::endl;
+unsigned int loadTexture(const char* texture) {
 	int imgwidth, imgheight, channels;
-	unsigned char* textTMP = nullptr;
-	unsigned char* text = nullptr;
-	std::vector<unsigned char> txt(32 * 32 * 4);
-	if (tileid == -1) {
+	// std::vector<unsigned char> txt(32 * 32 * 4);
+	unsigned char* text = stbi_load(texture, &imgwidth, &imgheight, &channels, 4);
+	/*if (tileid == -1) {
 		//textTMP = stbi_load("empty.png", &imgwidth, &imgheight, &channels, 4);
 		//text = textTMP;
 		tileid = 12; // tile -1 is the legacy id for empty tile
@@ -85,7 +87,7 @@ unsigned int loadTexture(const char* texture, int tileid) {
 		
 		imgwidth = 32;
 		imgheight = 32;
-	}
+	}*/
 
 	unsigned int textID;
 	glGenTextures(1, &textID);
@@ -99,22 +101,41 @@ unsigned int loadTexture(const char* texture, int tileid) {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
 	//std::cout << text[0];   for some reason it just freezes if you uncomment this line
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, imgwidth, imgheight, 0, GL_RGBA, GL_UNSIGNED_BYTE, text);
-	stbi_image_free(textTMP);
+	stbi_image_free(text);
 	return textID;
 }
 
-void drawImg(int x, int y, int w, int h, unsigned int textureID) {
+void drawImg(int x, int y, int w, int h, unsigned int textureID, int tileID, float ssh) {
+	if (tileID == -1) {
+		tileID = 12;
+	}
+
 	glEnable(GL_TEXTURE_2D);
 	glBindTexture(GL_TEXTURE_2D, textureID);
 
+	int tx = tileID % 8;
+	int ty = tileID / 8;
+
+	float u1 = (32*tx) / 256.0f;
+	float v1 = ((32*ty) / ssh);
+
+	float u2 = ((32*tx) + 32.0f) / 256.0f; // you see, every single sprite sheet is 256 pixels wide and I would most likely cease to exist if any needed to be a different width.
+	float v2 = ((32*ty + 32.0f) / ssh);
+
+	//std::cout << tx << " " << ty << " ";
+
 	glBegin(GL_QUADS);
-	glTexCoord2f(0, 0);
+	//glTexCoord2f(0, 0);
+	glTexCoord2f(u1, v1);
 	glVertex2f(x, y);
-	glTexCoord2f(1, 0);
+	//glTexCoord2f(1, 0);
+	glTexCoord2f(u2, v1);
 	glVertex2f(x + w, y);
-	glTexCoord2f(1, 1);
+	//glTexCoord2f(1, 1);
+	glTexCoord2f(u2, v2);
 	glVertex2f(x + w, y + h);
-	glTexCoord2f(0, 1);
+	//glTexCoord2f(0, 1);
+	glTexCoord2f(u1, v2);
 	glVertex2f(x, y + h);
 	glEnd();
 
@@ -139,13 +160,17 @@ int main(int argc, char* argv[]) {
 	glDisable(GL_CULL_FACE);
 
 	int mvmnt[4] = {GLFW_KEY_E, GLFW_KEY_D, GLFW_KEY_S, GLFW_KEY_F};
+	unsigned int state = 0;
 
 	std::vector<std::vector<int>> floormap = readmap("floor.txt");
 	std::vector<std::vector<int>> wallmap = readmap("wall.txt");
 	
-	std::map<int, unsigned int> textID;
+	unsigned int textID = loadTexture("assets/tiles.png");
+	unsigned int playerID = loadTexture("assets/raine.png");
 
 	while (!glfwWindowShouldClose(screen)) {
+		float fst = glfwGetTime();
+
 		glfwGetWindowSize(screen, &width, &height);
 		glViewport(0, 0, width, height);
 
@@ -158,40 +183,47 @@ int main(int argc, char* argv[]) {
 
 		if (glfwGetKey(screen, mvmnt[0]) == GLFW_PRESS) {
 			py += speed;
+			state = 1;
 		}
 		if (glfwGetKey(screen, mvmnt[1]) == GLFW_PRESS) {
 			py -= speed;
+			state = 0;
 		}
 		if (glfwGetKey(screen, mvmnt[2]) == GLFW_PRESS) {
 			px -= speed;
+			state = 3;
 		}
 		if (glfwGetKey(screen, mvmnt[3]) == GLFW_PRESS) {
 			px += speed;
+			state = 2;
 		}
 
 		glClear(GL_COLOR_BUFFER_BIT);
+		int ssr = 2; /*the number of rows in the tile spritesheet. change if needed.*/
 		for (int i=0; i<floormap.size(); i++) {
 			for (int j=0; j<floormap[i].size(); j++) {
-				if (textID.find(floormap[i][j]) == textID.end()) {
-					textID[floormap[i][j]] = loadTexture("assets/tiles.png", floormap[i][j]);
-				}
 				getscrxy(j, i, &tmpx, &tmpy);
-				drawImg(tmpx-px+(width/2), tmpy+py, 384, 384, textID[floormap[i][j]]);
-
+				drawImg(tmpx-px+(width/2-96), tmpy+py+(height/2-96), 384, 384, textID, floormap[i][j], (float)(32*ssr));
 			}
 		}
 		for (int i=0; i<wallmap.size(); i++) {
 			for (int j=0; j<wallmap[i].size(); j++) {
-				if (textID.find(wallmap[i][j]) == textID.end()) {
-					textID[wallmap[i][j]] = loadTexture("assets/tiles.png", wallmap[i][j]);
-				}
 				getscrxy(j, i, &tmpx, &tmpy);
-				drawImg(tmpx-px+(width/2), tmpy+py-48, 384, 384, textID[wallmap[i][j]]);
+				drawImg(tmpx-px+(width/2-96), tmpy+py-48+(height/2-96), 384, 384, textID, wallmap[i][j], (float)(32*ssr));
 			}
 		}
+
+		int pssr = 1;
+		drawImg(width/2-96, height/2-96, 192, 192, playerID, state, (float)(32*pssr));
 		
 		glfwSwapBuffers(screen);
 		glfwPollEvents();
+
+		float fet = glfwGetTime();
+		float fdu = fet - fst;
+		if (fdu < tfd) {
+			std::this_thread::sleep_for(std::chrono::milliseconds(static_cast<int>((tfd - fdu) * 1000)));
+		}
 	}
 	glfwTerminate();
 }
