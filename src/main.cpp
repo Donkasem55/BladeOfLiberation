@@ -27,6 +27,8 @@ int tmpx, tmpy;
 
 const float tfps = 120.0f;
 const float tfd = 1.0f / tfps;
+const char* lf = "levels/test/floor.txt";
+const char* lw = "levels/test/wall.txt";
 
 void getscrxy(int x, int y, int* xout, int* yout) {
 	*xout = tilewidth/2 * (x-y);
@@ -162,8 +164,8 @@ int main(int argc, char* argv[]) {
 	int mvmnt[4] = {GLFW_KEY_E, GLFW_KEY_D, GLFW_KEY_S, GLFW_KEY_F};
 	unsigned int state = 0;
 
-	std::vector<std::vector<int>> floormap = readmap("floor.txt");
-	std::vector<std::vector<int>> wallmap = readmap("wall.txt");
+	std::vector<std::vector<int>> floormap = readmap(lf);
+	std::vector<std::vector<int>> wallmap = readmap(lw);
 	
 	unsigned int textID = loadTexture("assets/tiles.png");
 	unsigned int playerID = loadTexture("assets/raine.png");
