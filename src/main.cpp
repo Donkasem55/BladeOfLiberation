@@ -53,10 +53,8 @@ std::vector<std::vector<int>> readmap(const char* filename) {
 		std::vector<int> tmp;
 		for (const auto& val : split(line, ' ')) {
 			tmp.push_back(std::stoi(val));
-			std::cout << val << " ";
 		}
 		output.push_back(tmp);
-		std::cout << std::endl;
 	}
 	return output;
 }
@@ -124,7 +122,8 @@ void drawImg(int x, int y, int w, int h, unsigned int textureID, int tileID, flo
 	float u2 = ((32*tx) + 32.0f) / 256.0f; // you see, every single sprite sheet is 256 pixels wide and I would most likely cease to exist if any needed to be a different width.
 	float v2 = ((32*ty + 32.0f) / ssh);
 
-	//std::cout << tx << " " << ty << " ";
+	// i hate my life
+	// if you read this you're bi
 
 	glBegin(GL_QUADS);
 	//glTexCoord2f(0, 0);
