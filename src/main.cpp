@@ -223,7 +223,7 @@ int main(int argc, char* argv[]) {
 		float sx, sy, csx, csy;
 
 		glClear(GL_COLOR_BUFFER_BIT);
-		int ssr = 2; /*the number of rows in the tile spritesheet. change if needed.*/
+		int ssr = 3; /*the number of rows in the tile spritesheet. change if needed.*/
 		for (int i=0; i<floormap.size(); i++) {
 			for (int j=0; j<floormap[i].size(); j++) {
 				getscrxy((float)j, (float)i, &sx, &sy);
