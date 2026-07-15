@@ -13,16 +13,18 @@
 #include <fstream>
 #include <iostream>
 
-const int tilewidth = 384;
-const int tileheight = 192;
+#include <math.h> // math.h is better than cmath, prove me wrong.
+
+const int tilewidth = 256;
+const int tileheight = 128;
 
 int width;
 int height;
 
-int px = 0;
-int py = 0;
+float px = 3.0f;
+float py = 3.0f;
 
-int speed = 8;
+float speed = 0.05f;
 int tmpx, tmpy;
 
 const float tfps = 120.0f;
@@ -30,7 +32,7 @@ const float tfd = 1.0f / tfps;
 const char* lf = "levels/test/floor.txt";
 const char* lw = "levels/test/wall.txt";
 
-void getscrxy(int x, int y, int* xout, int* yout) {
+void getscrxy(float x, float y, float* xout, float* yout) {
 	*xout = tilewidth/2 * (x-y);
 	*yout = tileheight/2 * (x+y);
 }
@@ -88,6 +90,8 @@ unsigned int loadTexture(const char* texture) {
 		imgwidth = 32;
 		imgheight = 32;
 	}*/
+
+	// Bjarne's mom
 
 	unsigned int textID;
 	glGenTextures(1, &textID);
@@ -172,7 +176,7 @@ int main(int argc, char* argv[]) {
 	while (!glfwWindowShouldClose(screen)) {
 		float fst = glfwGetTime();
 
-		glfwGetWindowSize(screen, &width, &height);
+		glfwGetFramebufferSize(screen, &width, &height);
 		glViewport(0, 0, width, height);
 
 		glMatrixMode(GL_PROJECTION);
@@ -181,36 +185,57 @@ int main(int argc, char* argv[]) {
 
 		glMatrixMode(GL_MODELVIEW);
 		glLoadIdentity();
+		
+		float dx = 0.0f;
+		float dy = 0.0f;
 
 		if (glfwGetKey(screen, mvmnt[0]) == GLFW_PRESS) {
-			py += speed;
+			dy -= speed*3/2;
+			dx -= speed*3/2;
 			state = 1;
 		}
 		if (glfwGetKey(screen, mvmnt[1]) == GLFW_PRESS) {
-			py -= speed;
+			dy += speed*3/2;
+			dx += speed*3/2;
 			state = 0;
 		}
 		if (glfwGetKey(screen, mvmnt[2]) == GLFW_PRESS) {
-			px -= speed;
+			dy += speed;
+			dx -= speed;
 			state = 3;
 		}
 		if (glfwGetKey(screen, mvmnt[3]) == GLFW_PRESS) {
-			px += speed;
+			dy -= speed;
+			dx += speed;
 			state = 2;
 		}
+
+		// WHY WHY WHY
+
+		px += dx;
+		py += dy;
+
+		int tx = (int)floor(px);
+		int ty = (int)floor(py);
+
+		float camx = px;
+		float camy = py;
+		float sx, sy, csx, csy;
 
 		glClear(GL_COLOR_BUFFER_BIT);
 		int ssr = 2; /*the number of rows in the tile spritesheet. change if needed.*/
 		for (int i=0; i<floormap.size(); i++) {
 			for (int j=0; j<floormap[i].size(); j++) {
-				getscrxy(j, i, &tmpx, &tmpy);
-				drawImg(tmpx-px+(width/2-96), tmpy+py+(height/2-96), 384, 384, textID, floormap[i][j], (float)(32*ssr));
+				getscrxy((float)j, (float)i, &sx, &sy);
+				getscrxy((float)camx, (float)camy, &csx, &csy);
+				drawImg(sx-csx+(width/2), sy-csy+(height/2), 256, 256, textID, floormap[i][j], (float)(32*ssr));
 			}
 		}
 		for (int i=0; i<wallmap.size(); i++) {
 			for (int j=0; j<wallmap[i].size(); j++) {
-				getscrxy(j, i, &tmpx, &tmpy);
-				drawImg(tmpx-px+(width/2-96), tmpy+py-48+(height/2-96), 384, 384, textID, wallmap[i][j], (float)(32*ssr));
+				getscrxy((float)j, (float)i, &sx, &sy);
+				getscrxy((float)camx, (float)camy, &csx, &csy);
+				drawImg(sx-csx+(width/2), sy-csy+(height/2)-88, 256, 256, textID, wallmap[i][j], (float)(32*ssr));
 			}
 		}
 
