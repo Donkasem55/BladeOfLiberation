@@ -253,18 +253,21 @@ int main(int argc, char* argv[]) {
 				drawImg(sx-csx+(width/2), sy-csy+(height/2), 256, 256, textID, floormap[i][j], (float)(32*ssr));
 			}
 		}
+
 		for (int i=0; i<wallmap.size(); i++) {
 			for (int j=0; j<wallmap[i].size(); j++) {
 				getscrxy((float)j, (float)i, &sx, &sy);
 				getscrxy((float)camx, (float)camy, &csx, &csy);
+				drawImg(sx-csx+(width/2), sy-csy+(height/2)+8, 256, 256, textID, wallmap[i][j], (float)(32*ssr));
 				drawImg(sx-csx+(width/2), sy-csy+(height/2)-88, 256, 256, textID, wallmap[i][j], (float)(32*ssr));
 			}
 		}
+
 		for (int i=0; i<specialmap.size(); i++) {
 			for (int j=0; j<specialmap[i].size(); j++) {
 				getscrxy((float)j, (float)i, &sx, &sy);
 				getscrxy((float)camx, (float)camy, &csx, &csy);
-				drawImg(sx-csx+(width/2), sy-csy+(height/2), 256, 256, textID, specialmap[i][j], (float)(32*ssr));
+				drawImg(sx-csx+(width/2), sy-csy+(height/2)+24, 256, 256, textID, specialmap[i][j], (float)(32*ssr));
 			}
 		}
 
