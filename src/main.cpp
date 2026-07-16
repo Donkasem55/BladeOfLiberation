@@ -31,6 +31,10 @@ const float tfps = 120.0f;
 const float tfd = 1.0f / tfps;
 const char* lf = "levels/test/floor.txt";
 const char* lw = "levels/test/wall.txt";
+const char* ls = "levels/test/special.txt";
+
+bool paused = false;
+bool ispaused = false;
 
 void getscrxy(float x, float y, float* xout, float* yout) {
 	*xout = tilewidth/2 * (x-y);
@@ -164,14 +168,16 @@ int main(int argc, char* argv[]) {
 	glDisable(GL_SCISSOR_TEST);
 	glDisable(GL_CULL_FACE);
 
-	int mvmnt[4] = {GLFW_KEY_E, GLFW_KEY_D, GLFW_KEY_S, GLFW_KEY_F};
+	int mvmnt[] = {GLFW_KEY_E, GLFW_KEY_D, GLFW_KEY_S, GLFW_KEY_F, GLFW_KEY_R};
 	unsigned int state = 0;
 
 	std::vector<std::vector<int>> floormap = readmap(lf);
 	std::vector<std::vector<int>> wallmap = readmap(lw);
+	std::vector<std::vector<int>> specialmap = readmap(ls);
 	
 	unsigned int textID = loadTexture("assets/tiles.png");
 	unsigned int playerID = loadTexture("assets/raine.png");
+	unsigned int uiID = loadTexture("assets/ui.png");
 
 	while (!glfwWindowShouldClose(screen)) {
 		float fst = glfwGetTime();
@@ -209,16 +215,26 @@ int main(int argc, char* argv[]) {
 			dx += speed;
 			state = 2;
 		}
+		if (glfwGetKey(screen, mvmnt[4]) == GLFW_PRESS) {
+			if (!ispaused) {
+				paused = !(paused);
+				ispaused = true;
+			}
+		} else {
+			ispaused = false;
+		}
 
 		// WHY WHY WHY
 		
-		float newx = px+dx;
-		float newy = py+dy;
-		if (wallmap[py+1][(int)floor(newx)] == -1 || wallmap[py+1][(int)floor(newx)] == 12) {
-			px = newx;
-		} 
-		if (wallmap[(int)floor(newy)+1][px] == -1 || wallmap[(int)floor(newy)+1][px] == 12) { // why the fuck does adding +1 work
-			py = newy;
+		if (!ispaused) {
+			float newx = px+dx;
+			float newy = py+dy;
+			if (wallmap[py+1][(int)floor(newx)] == -1 || wallmap[py+1][(int)floor(newx)] == 12) {
+				px = newx;
+			} 
+			if (wallmap[(int)floor(newy)+1][px] == -1 || wallmap[(int)floor(newy)+1][px] == 12) { // why the fuck does adding +1 work
+				py = newy;
+			}
 		}
 
 		int tx = (int)floor(px);
@@ -242,6 +258,13 @@ int main(int argc, char* argv[]) {
 				getscrxy((float)j, (float)i, &sx, &sy);
 				getscrxy((float)camx, (float)camy, &csx, &csy);
 				drawImg(sx-csx+(width/2), sy-csy+(height/2)-88, 256, 256, textID, wallmap[i][j], (float)(32*ssr));
+			}
+		}
+		for (int i=0; i<specialmap.size(); i++) {
+			for (int j=0; j<specialmap[i].size(); j++) {
+				getscrxy((float)j, (float)i, &sx, &sy);
+				getscrxy((float)camx, (float)camy, &csx, &csy);
+				drawImg(sx-csx+(width/2), sy-csy+(height/2), 256, 256, textID, specialmap[i][j], (float)(32*ssr));
 			}
 		}
 
