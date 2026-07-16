@@ -211,9 +211,15 @@ int main(int argc, char* argv[]) {
 		}
 
 		// WHY WHY WHY
-
-		px += dx;
-		py += dy;
+		
+		float newx = px+dx;
+		float newy = py+dy;
+		if (wallmap[py+1][(int)floor(newx)] == -1 || wallmap[py+1][(int)floor(newx)] == 12) {
+			px = newx;
+		} 
+		if (wallmap[(int)floor(newy)+1][px] == -1 || wallmap[(int)floor(newy)+1][px] == 12) { // why the fuck does adding +1 work
+			py = newy;
+		}
 
 		int tx = (int)floor(px);
 		int ty = (int)floor(py);
