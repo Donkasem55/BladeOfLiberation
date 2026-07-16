@@ -250,7 +250,7 @@ int main(int argc, char* argv[]) {
 			for (int j=0; j<floormap[i].size(); j++) {
 				getscrxy((float)j, (float)i, &sx, &sy);
 				getscrxy((float)camx, (float)camy, &csx, &csy);
-				drawImg(sx-csx+(width/2), sy-csy+(height/2), 256, 256, textID, floormap[i][j], (float)(32*ssr));
+				drawImg(sx-csx+(width/2), sy-csy+(height/2)+96, 256, 256, textID, floormap[i][j], (float)(32*ssr));
 			}
 		}
 
