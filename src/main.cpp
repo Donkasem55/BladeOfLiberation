@@ -9,6 +9,7 @@
 #include <vector>
 #include <thread>
 #include <chrono>
+#include <array>
 #include <sstream>
 #include <fstream>
 #include <iostream>
@@ -244,12 +245,15 @@ int main(int argc, char* argv[]) {
 		float camy = py;
 		float sx, sy, csx, csy;
 
+		std::vector<std::array<void*, 7>> buffer;
+		int tilesizetmp = 256;
+
 		glClear(GL_COLOR_BUFFER_BIT);
 		int ssr = 3; /*the number of rows in the tile spritesheet. change if needed.*/
+		getscrxy((float)camx, (float)camy, &csx, &csy);
 		for (int i=0; i<floormap.size(); i++) {
 			for (int j=0; j<floormap[i].size(); j++) {
 				getscrxy((float)j, (float)i, &sx, &sy);
-				getscrxy((float)camx, (float)camy, &csx, &csy);
 				drawImg(sx-csx+(width/2), sy-csy+(height/2)+96, 256, 256, textID, floormap[i][j], (float)(32*ssr));
 			}
 		}
@@ -257,22 +261,73 @@ int main(int argc, char* argv[]) {
 		for (int i=0; i<wallmap.size(); i++) {
 			for (int j=0; j<wallmap[i].size(); j++) {
 				getscrxy((float)j, (float)i, &sx, &sy);
-				getscrxy((float)camx, (float)camy, &csx, &csy);
-				drawImg(sx-csx+(width/2), sy-csy+(height/2)+8, 256, 256, textID, wallmap[i][j], (float)(32*ssr));
-				drawImg(sx-csx+(width/2), sy-csy+(height/2)-88, 256, 256, textID, wallmap[i][j], (float)(32*ssr));
+				void** added = new void*[7];
+				int* tmp1 = new int(sx-csx+(width/2));
+				int* tmp2 = new int(sy-csy+(height/2)+8);
+				unsigned int* tmp3 = new unsigned int(textID);
+				int* tmp4 = new int(wallmap[i][j]);
+				float* tmp5 = new float((float)(32*ssr));
+				added[0] = tmp1;
+				added[1] = tmp2;
+				added[2] = &tilesizetmp;
+				added[3] = &tilesizetmp;
+				added[4] = tmp3;
+				added[5] = tmp4;
+				added[6] = tmp5;
+				buffer.push_back(*added);
+				
+				void** added = new void*[7];
+				int* tmp1 = new int(sx-csx+(width/2));
+				int* tmp2 = new int(sy-csy+(height/2)-88);
+				unsigned int* tmp3 = new unsigned int(textID);
+				int* tmp4 = new int(wallmap[i][j]);
+				float* tmp5 = new float((float)(32*ssr));
+				added[0] = tmp1;
+				added[1] = tmp2;
+				added[2] = &tilesizetmp;
+				added[3] = &tilesizetmp;
+				added[4] = tmp3;
+				added[5] = tmp4;
+				added[6] = tmp5;
+				buffer.push_back(*added);
 			}
 		}
 
 		for (int i=0; i<specialmap.size(); i++) {
 			for (int j=0; j<specialmap[i].size(); j++) {
 				getscrxy((float)j, (float)i, &sx, &sy);
-				getscrxy((float)camx, (float)camy, &csx, &csy);
-				drawImg(sx-csx+(width/2), sy-csy+(height/2)+24, 256, 256, textID, specialmap[i][j], (float)(32*ssr));
+				void** added = new void*[7];
+				int* tmp1 = new int(sx-csx+(width/2));
+				int* tmp2 = new int(sy-csy+(height/2)+24);
+				unsigned int* tmp3 = new unsigned int(textID);
+				int* tmp4 = new int(specialmap[i][j]);
+				float* tmp5 = new float((float)(32*ssr));
+				added[0] = tmp1;
+				added[1] = tmp2;
+				added[2] = &tilesizetmp;
+				added[3] = &tilesizetmp;
+				added[4] = tmp3;
+				added[5] = tmp4;
+				added[6] = tmp5;
+				buffer.push_back(*added);
+			}
+		}
+		int tmpfin = 0;
+		for (int i=0; i<buffer.size(); i++) {
+			if (buffer[i][1] <= csy) {
+				drawImg(*(int*)buffer[i][0], *(int*)buffer[i][1], *(int*)buffer[i][2], *(int*)buffer[i][3], *(unsigned int*)buffer[i][4], *(int*)buffer[i][5], *(float*)buffer[i][6]);
+			} else {
+				tmpfin = i;
+				break;
 			}
 		}
 
 		int pssr = 1;
 		drawImg(width/2-96, height/2-96, 192, 192, playerID, state, (float)(32*pssr));
+
+		for (int i=tmpfin; i<buffer.size(); i++) {
+			drawImg(*(int*)buffer[i][0], *(int*)buffer[i][1], *(int*)buffer[i][2], *(int*)buffer[i][3], *(unsigned int*)buffer[i][4], *(int*)buffer[i][5], *(float*)buffer[i][6]);
+		}
 		
 		glfwSwapBuffers(screen);
 		glfwPollEvents();
