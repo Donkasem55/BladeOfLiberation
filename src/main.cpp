@@ -66,6 +66,16 @@ std::vector<std::vector<int>> readmap(const char* filename) {
 	return output;
 }
 
+typedef struct draw {
+	int x;
+	int y;
+	int w;
+	int h;
+	unsigned int text;
+	int tile;
+	float ssh;
+} draw;
+
 unsigned int loadTexture(const char* texture) {
 	int imgwidth, imgheight, channels;
 	// std::vector<unsigned char> txt(32 * 32 * 4);
@@ -245,7 +255,8 @@ int main(int argc, char* argv[]) {
 		float camy = py;
 		float sx, sy, csx, csy;
 
-		std::vector<std::array<void*, 7>> buffer;
+		std::vector<draw> buffer;
+		std::vector<draw> buffer2;
 		int tilesizetmp = 256;
 
 		glClear(GL_COLOR_BUFFER_BIT);
@@ -254,81 +265,73 @@ int main(int argc, char* argv[]) {
 		for (int i=0; i<floormap.size(); i++) {
 			for (int j=0; j<floormap[i].size(); j++) {
 				getscrxy((float)j, (float)i, &sx, &sy);
-				drawImg(sx-csx+(width/2), sy-csy+(height/2)+96, 256, 256, textID, floormap[i][j], (float)(32*ssr));
+				drawImg(sx-csx+(width/2), sy-csy+(height/2)+48, 256, 256, textID, floormap[i][j], (float)(32*ssr));
 			}
 		}
 
 		for (int i=0; i<wallmap.size(); i++) {
 			for (int j=0; j<wallmap[i].size(); j++) {
 				getscrxy((float)j, (float)i, &sx, &sy);
-				void** added = new void*[7];
-				int* tmp1 = new int(sx-csx+(width/2));
-				int* tmp2 = new int(sy-csy+(height/2)+8);
-				unsigned int* tmp3 = new unsigned int(textID);
-				int* tmp4 = new int(wallmap[i][j]);
-				float* tmp5 = new float((float)(32*ssr));
-				added[0] = tmp1;
-				added[1] = tmp2;
-				added[2] = &tilesizetmp;
-				added[3] = &tilesizetmp;
-				added[4] = tmp3;
-				added[5] = tmp4;
-				added[6] = tmp5;
-				buffer.push_back(*added);
-				
-				void** added = new void*[7];
-				int* tmp1 = new int(sx-csx+(width/2));
-				int* tmp2 = new int(sy-csy+(height/2)-88);
-				unsigned int* tmp3 = new unsigned int(textID);
-				int* tmp4 = new int(wallmap[i][j]);
-				float* tmp5 = new float((float)(32*ssr));
-				added[0] = tmp1;
-				added[1] = tmp2;
-				added[2] = &tilesizetmp;
-				added[3] = &tilesizetmp;
-				added[4] = tmp3;
-				added[5] = tmp4;
-				added[6] = tmp5;
-				buffer.push_back(*added);
+				draw added{
+					sx-csx+(width/2),
+					sy-csy+(height/2)-40,
+					tilesizetmp,
+					tilesizetmp,
+					textID,
+					wallmap[i][j],
+					(float)(32*ssr)
+				};
+
+				draw added2{
+					sx-csx+(width/2),
+					sy-csy+(height/2)-136,
+					tilesizetmp,
+					tilesizetmp,
+					textID,
+					wallmap[i][j],
+					(float)(32*ssr)
+				};
+				if (sy <= (height/2)+96) {
+					buffer.push_back(added);
+					buffer.push_back(added2);
+				} else {
+					buffer2.push_back(added);
+					buffer2.push_back(added2);
+				}
 			}
 		}
 
 		for (int i=0; i<specialmap.size(); i++) {
 			for (int j=0; j<specialmap[i].size(); j++) {
 				getscrxy((float)j, (float)i, &sx, &sy);
-				void** added = new void*[7];
-				int* tmp1 = new int(sx-csx+(width/2));
-				int* tmp2 = new int(sy-csy+(height/2)+24);
-				unsigned int* tmp3 = new unsigned int(textID);
-				int* tmp4 = new int(specialmap[i][j]);
-				float* tmp5 = new float((float)(32*ssr));
-				added[0] = tmp1;
-				added[1] = tmp2;
-				added[2] = &tilesizetmp;
-				added[3] = &tilesizetmp;
-				added[4] = tmp3;
-				added[5] = tmp4;
-				added[6] = tmp5;
-				buffer.push_back(*added);
+				draw added{
+					sx-csx+(width/2),
+					sy-csy+(height/2)-24,
+					tilesizetmp,
+					tilesizetmp,
+					textID,
+					specialmap[i][j],
+					(float)(32*ssr)
+				};
+				if (sy <= (height/2)+96) {
+					buffer.push_back(added);
+				} else {
+					buffer2.push_back(added);
+				}
 			}
 		}
-		int tmpfin = 0;
+		
 		for (int i=0; i<buffer.size(); i++) {
-			if (buffer[i][1] <= csy) {
-				drawImg(*(int*)buffer[i][0], *(int*)buffer[i][1], *(int*)buffer[i][2], *(int*)buffer[i][3], *(unsigned int*)buffer[i][4], *(int*)buffer[i][5], *(float*)buffer[i][6]);
-			} else {
-				tmpfin = i;
-				break;
-			}
+			drawImg(buffer[i].x, buffer[i].y, buffer[i].w, buffer[i].h, buffer[i].text, buffer[i].tile, buffer[i].ssh);
 		}
 
 		int pssr = 1;
 		drawImg(width/2-96, height/2-96, 192, 192, playerID, state, (float)(32*pssr));
 
-		for (int i=tmpfin; i<buffer.size(); i++) {
-			drawImg(*(int*)buffer[i][0], *(int*)buffer[i][1], *(int*)buffer[i][2], *(int*)buffer[i][3], *(unsigned int*)buffer[i][4], *(int*)buffer[i][5], *(float*)buffer[i][6]);
+		for (int i=0; i<buffer2.size(); i++) {
+			drawImg(buffer2[i].x, buffer2[i].y, buffer2[i].w, buffer2[i].h, buffer2[i].text, buffer2[i].tile, buffer2[i].ssh);
 		}
-		
+
 		glfwSwapBuffers(screen);
 		glfwPollEvents();
 
