@@ -162,6 +162,25 @@ void drawImg(int x, int y, int w, int h, unsigned int textureID, int tileID, flo
 	glDisable(GL_TEXTURE_2D);
 }
 
+void drawGUI(int x1, int y1, int w, int h, unsigned int textureID, float ssh) {
+	int x2 = x1+32;
+	int y2 = y1+32;
+	int x3 = x1+w-32;
+	int y3 = y1+h-32;
+	int w2 = w-64;
+	int h2 = h-64;
+
+	drawImg(x1, y1, 32, 32, textureID, 0, ssh);
+	drawImg(x2, y1, w2, 32, textureID, 1, ssh);
+	drawImg(x3, y1, 32, 32, textureID, 2, ssh);
+	drawImg(x1, y2, 32, h2, textureID, 3, ssh);
+	drawImg(x2, y2, w2, h2, textureID, 4, ssh);
+	drawImg(x3, y2, 32, h2, textureID, 5, ssh);
+	drawImg(x1, y3, 32, 32, textureID, 6, ssh);
+	drawImg(x2, y3, w2, 32, textureID, 7, ssh);
+	drawImg(x3, y3, 32, 32, textureID, 8, ssh);
+}
+
 // we live in a cruel world
 
 int main(int argc, char* argv[]) {
@@ -190,6 +209,8 @@ int main(int argc, char* argv[]) {
 	unsigned int playerID = loadTexture("assets/raine.png");
 	unsigned int uiID = loadTexture("assets/ui.png");
 
+	// Introducing the newest technology: The pain creator! wait no, sorry, the real name was C++.
+	
 	while (!glfwWindowShouldClose(screen)) {
 		float fst = glfwGetTime();
 

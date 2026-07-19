@@ -1,0 +1,4 @@
+spwd 650931;
+ipn 3 1 : jmp dspgui;
+lab dspgui : og pwd;
+
