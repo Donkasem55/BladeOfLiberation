@@ -1,4 +1,7 @@
-spwd 650931;
-ipn 3 1 : jmp dspgui;
-lab dspgui : og pwd;
+#include <bolc>;
+#define pwd 650931;
 
+int trigger() {
+	if (bolc: ipn 3 1) dspgui pwd;
+	return 0;
+}
